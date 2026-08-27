@@ -1,0 +1,70 @@
+{
+  "model_version": "0.1.0",
+  "trained_at": "2026-08-24T21:36:50.613487+00:00",
+  "selected_model": "balanced_random_forest",
+  "selection_metric": "average_precision",
+  "validation_scores": {
+    "balanced_logistic_regression": 0.35402079379251034,
+    "balanced_random_forest": 0.8426110429307586
+  },
+  "threshold": 0.2042211055276382,
+  "validation_expected_cost": 0.172,
+  "test": {
+    "average_precision": 0.931390023302113,
+    "roc_auc": 0.9772121408950054,
+    "brier_score": 0.004823678917291163,
+    "precision": 0.8679245283018868,
+    "recall": 0.9019607843137255,
+    "f1": 0.8846153846153846,
+    "expected_cost": 0.088,
+    "confusion_matrix": [
+      [
+        1442,
+        7
+      ],
+      [
+        5,
+        46
+      ]
+    ],
+    "samples": 1500,
+    "failures": 51
+  },
+  "global_importance": [
+    {
+      "feature": "torque_nm",
+      "mean": 0.6865945900772896,
+      "std": 0.04615381382922216
+    },
+    {
+      "feature": "rotational_speed_rpm",
+      "mean": 0.47987882294515816,
+      "std": 0.03742061726529467
+    },
+    {
+      "feature": "air_temperature_k",
+      "mean": 0.45567644578305655,
+      "std": 0.03982135672506902
+    },
+    {
+      "feature": "tool_wear_min",
+      "mean": 0.333140917718531,
+      "std": 0.061822969157371364
+    },
+    {
+      "feature": "process_temperature_k",
+      "mean": 0.23599823851685314,
+      "std": 0.03930556126256622
+    },
+    {
+      "feature": "product_type",
+      "mean": 0.04149816214319527,
+      "std": 0.01629780832099106
+    }
+  ],
+  "split": {
+    "train": 7000,
+    "validation": 1500,
+    "test": 1500
+  }
+}
