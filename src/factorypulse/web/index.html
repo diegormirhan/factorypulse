@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#e9e7df" />
+    <meta name="description" content="FactoryPulse — explainable machine-failure risk assessment." />
+    <title>FactoryPulse · Reliability console</title>
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/assets/styles.css" />
+  </head>
+  <body><!--
+    THESIS: Machine health is a route of inspectable signals, refusing the generic dark AI dashboard and metric-card grid.
+    OWN-WORLD: Warm enamel ground, near-black track rules, physical signal lamps, square controls, condensed operational headings, and green/amber/red states that always carry text.
+    STORY: The operator enters six readings, sees a calibrated inspection decision, then audits the measurements and holdout evidence behind it.
+    FIRST VIEWPORT: An oversized failure-path thesis leads into a horizontal interlocking route; the assessment form and signal decision share the main work surface, with the primary action spanning the form.
+    FORM: Railway interlocking control panel, fourth of seven grounded forms; concept seed 15fe29ae.
+    FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
+    -->
+    <a class="skip-link" href="#assessment">Skip to assessment</a>
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="FactoryPulse home">
+        <svg viewBox="0 0 40 40" aria-hidden="true">
+          <path d="M5 20h9m12 0h9M14 12v16m12-16v16M14 20h12" />
+          <circle cx="20" cy="20" r="4" />
+        </svg>
+        <span>FactoryPulse</span>
+      </a>
+      <div class="system-state" aria-live="polite">
+        <span class="state-lamp" id="api-lamp"></span>
+        <span id="api-status">Checking model</span>
+      </div>
+      <a class="docs-link" href="/docs">API docs</a>
+    </header>
+
+    <main>
+      <section class="route-map" aria-labelledby="route-title">
+        <div class="route-intro">
+          <h1 id="route-title">See the failure path before it stops the line.</h1>
+          <p>
+            Six operating signals enter one calibrated risk decision. Every alert includes
+            the measurements that moved it.
+          </p>
+        </div>
+        <div class="signal-route" aria-label="Machine assessment signal path">
+          <div class="route-line" aria-hidden="true"></div>
+          <div class="route-stop complete"><span class="route-node"></span><strong>Sense</strong><small>6 readings</small></div>
+          <div class="route-stop complete"><span class="route-node"></span><strong>Calibrate</strong><small>local model</small></div>
+          <div class="route-stop active" id="route-decision"><span class="route-node"></span><strong>Decide</strong><small id="route-risk">awaiting input</small></div>
+          <div class="route-stop"><span class="route-node"></span><strong>Inspect</strong><small>cost-aware</small></div>
+        </div>
+      </section>
+
+      <section class="workspace" id="assessment">
+        <form class="assessment-panel" id="risk-form">
+          <div class="panel-heading">
+            <div>
+              <h2>Operating assessment</h2>
+              <p>Enter the latest readings or load a demonstration scenario.</p>
+            </div>
+            <div class="scenario-switch" aria-label="Demonstration scenarios">
+              <button type="button" class="scenario active" data-scenario="nominal" aria-pressed="true">Nominal</button>
+              <button type="button" class="scenario" data-scenario="stress" aria-pressed="false">Stress test</button>
+            </div>
+          </div>
+
+          <fieldset>
+            <legend>Machine and environment</legend>
+            <label>Product grade
+              <select name="product_type"><option value="L">L · Low</option><option value="M" selected>M · Medium</option><option value="H">H · High</option></select>
+            </label>
+            <label>Air temperature
+              <span class="input-unit"><input name="air_temperature_k" type="number" min="250" max="350" step="0.1" value="300.1" required /><span>K</span></span>
+            </label>
+            <label>Process temperature
+              <span class="input-unit"><input name="process_temperature_k" type="number" min="250" max="370" step="0.1" value="309.8" required /><span>K</span></span>
+            </label>
+          </fieldset>
+
+          <fieldset>
+            <legend>Mechanical load</legend>
+            <label>Rotational speed
+              <span class="input-unit"><input name="rotational_speed_rpm" type="number" min="500" max="4000" step="1" value="1450" required /><span>rpm</span></span>
+            </label>
+            <label>Torque
+              <span class="input-unit"><input name="torque_nm" type="number" min="0" max="120" step="0.1" value="41.2" required /><span>Nm</span></span>
+            </label>
+            <label>Tool wear
+              <span class="input-unit"><input name="tool_wear_min" type="number" min="0" max="500" step="1" value="92" required /><span>min</span></span>
+            </label>
+          </fieldset>
+
+          <button class="assess-button" id="assess-button" type="submit">
+            <span>Run risk assessment</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12h14m-5-5 5 5-5 5" /></svg>
+          </button>
+          <p class="form-error" id="form-error" role="alert"></p>
+        </form>
+
+        <aside class="decision-panel" id="decision-panel" aria-live="polite">
+          <div class="decision-header">
+            <span class="decision-label">Current signal</span>
+            <span class="decision-badge pending" id="risk-badge">Pending</span>
+          </div>
+          <div class="risk-display">
+            <div class="signal-housing" aria-hidden="true"><span class="signal-light" id="signal-light"></span></div>
+            <div><span class="probability" id="probability">—</span><span class="probability-label">failure probability</span></div>
+          </div>
+          <p class="decision-copy" id="decision-copy">Run an assessment to compare this machine with the calibrated inspection threshold.</p>
+          <div class="threshold-track" aria-label="Decision threshold comparison">
+            <span class="threshold-fill" id="threshold-fill"></span><span class="threshold-marker" id="threshold-marker"></span>
+          </div>
+          <div class="threshold-labels"><span>0%</span><span id="threshold-label">threshold —</span><span>100%</span></div>
+          <div class="drivers">
+            <h3>Decision drivers</h3>
+            <div id="driver-list" class="driver-list"><p class="empty-state">Explanations will appear here after scoring.</p></div>
+          </div>
+        </aside>
+      </section>
+
+      <section class="evidence" aria-labelledby="evidence-title">
+        <div class="evidence-heading">
+          <h2 id="evidence-title">Model evidence, not a black box.</h2>
+          <p>Holdout performance is loaded from the saved training run. Failure-mode labels are excluded from the inputs to prevent target leakage.</p>
+        </div>
+        <dl class="metric-board">
+          <div><dt>Average precision</dt><dd id="metric-ap">—</dd></div>
+          <div><dt>Failure recall</dt><dd id="metric-recall">—</dd></div>
+          <div><dt>Probability error · Brier</dt><dd id="metric-brier">—</dd></div>
+          <div><dt>Holdout records</dt><dd id="metric-samples">—</dd></div>
+        </dl>
+        <div class="method-note">
+          <span>Model</span><strong id="model-name">Loading model card…</strong>
+          <span>Version</span><strong id="model-version">—</strong>
+        </div>
+      </section>
+    </main>
+
+    <footer><span>FactoryPulse · Local predictive maintenance</span><span>Portfolio demonstration using synthetic UCI AI4I data</span></footer>
+    <script src="/assets/app.js" defer></script>
+  </body>
+</html>
