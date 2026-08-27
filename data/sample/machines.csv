@@ -1,0 +1,6 @@
+product_type,air_temperature_k,process_temperature_k,rotational_speed_rpm,torque_nm,tool_wear_min
+M,298.1,308.6,1551,42.8,0
+L,298.2,308.7,1408,46.3,3
+L,298.9,309.1,2861,4.6,143
+L,298.9,309.0,1410,65.7,191
+L,298.8,308.9,1455,41.3,208
