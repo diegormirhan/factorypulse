@@ -14,7 +14,7 @@ inspect this machine now, or keep running it — and shows you why.**
 [![No API key](https://img.shields.io/badge/API%20key-not%20required-555)](#running-it)
 [![No Streamlit](https://img.shields.io/badge/Streamlit-not%20used-555)](#running-it)
 [![No build step](https://img.shields.io/badge/JS%20build-none-555)](src/factorypulse/web/)
-[![Tests](https://img.shields.io/badge/tests-14%20%C2%B7%2089%25%20coverage-success)](#verifying-it)
+[![Tests](https://img.shields.io/badge/tests-24%20%C2%B7%2090%25%20coverage-success)](#verifying-it)
 
 [What it decides](#the-question-it-answers) ·
 [Architecture](#architecture) ·
@@ -263,7 +263,28 @@ docker run --rm -p 8000:8000 factorypulse
 ```
 
 Splits, costs, threshold bounds, calibration folds, the random seed, PSI limits and API settings all
-live in `config.yaml`, loaded and validated once at the application boundary.
+live in `config.yaml`, loaded and validated once at the application boundary. Three environment
+variables override it, because a hosting platform decides them at runtime:
+
+| Variable | Effect |
+|---|---|
+| `PORT` | Port to listen on. Rejected at load time if it is not a valid port. |
+| `HOST` | Interface to bind. Defaults to `0.0.0.0`. |
+| `FACTORYPULSE_PREDICTIONS_LOG` | Redirects the prediction log; set it empty to switch it off. |
+
+### Deploying it
+
+[`render.yaml`](render.yaml) is a Render blueprint: point **New > Blueprint** at the repository and
+Render builds the Dockerfile, injects `PORT`, and polls `/api/health` until the bundle is loaded.
+`fly launch` generates its own config from the same Dockerfile and needs nothing extra.
+
+The hosted demo runs with `FACTORYPULSE_PREDICTIONS_LOG` empty. The container disk is ephemeral and
+the log has no rotation, so an append-per-request would grow until it is thrown away.
+
+**What it needs to run:** 223 MB resident with the bundle loaded, so a 512 MB instance is enough.
+The model takes about 3 seconds to load, which is cold-start cost, not per-request cost. This will
+not fit on a serverless platform — scipy, pandas, scikit-learn and NumPy alone are roughly 250 MB
+unpacked, which is Vercel's entire function budget before the 26 MB bundle.
 
 ---
 
@@ -275,7 +296,7 @@ uv run ruff check .
 uv run pytest
 ```
 
-**14 tests, 89% coverage.** They cover the schema and leakage boundary, feature engineering,
+**24 tests, 90% coverage.** They cover the schema and leakage boundary, feature engineering,
 threshold selection, metrics, model serialisation, inference, PSI behaviour, API validation and
 prediction responses. CI runs the identical three commands on every push and pull request.
 
