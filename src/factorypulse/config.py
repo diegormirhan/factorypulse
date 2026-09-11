@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -24,7 +25,7 @@ class PathConfig:
     model_bundle: Path
     metrics: Path
     reference_profile: Path
-    predictions_log: Path
+    predictions_log: Path | None
 
 
 @dataclass(frozen=True)
@@ -70,13 +71,14 @@ def load_settings(config_path: str | Path = "config.yaml") -> Settings:
     raw = _read_yaml(resolved_config)
     root = resolved_config.parent
     paths = {name: _resolve(root, value) for name, value in raw["paths"].items()}
+    paths["predictions_log"] = _prediction_log(root, raw["paths"]["predictions_log"])
     settings = Settings(
         project=ProjectConfig(**raw["project"]),
         dataset=DatasetConfig(**raw["dataset"]),
         paths=PathConfig(**paths),
         training=TrainingConfig(**raw["training"]),
         monitoring=MonitoringConfig(**raw["monitoring"]),
-        api=ApiConfig(**raw["api"]),
+        api=_api_config(raw["api"]),
         root=root,
     )
     _validate(settings)
@@ -96,6 +98,32 @@ def _read_yaml(path: Path) -> dict[str, Any]:
 def _resolve(root: Path, value: str) -> Path:
     path = Path(value)
     return path if path.is_absolute() else root / path
+
+
+def _prediction_log(root: Path, configured: str) -> Path | None:
+    """Container platforms give the process an ephemeral disk with no rotation.
+
+    FACTORYPULSE_PREDICTIONS_LOG redirects the log; setting it empty turns it off.
+    """
+    override = os.getenv("FACTORYPULSE_PREDICTIONS_LOG")
+    if override is None:
+        return _resolve(root, configured)
+    if not override.strip():
+        return None
+    return _resolve(root, override.strip())
+
+
+def _api_config(raw: dict[str, Any]) -> ApiConfig:
+    """PORT and HOST are how container platforms tell the process where to listen."""
+    host = os.getenv("HOST") or raw["host"]
+    port = os.getenv("PORT") or raw["port"]
+    try:
+        port = int(port)
+    except (TypeError, ValueError) as error:
+        raise ValueError(f"PORT must be an integer: {port!r}") from error
+    if not 1 <= port <= 65535:
+        raise ValueError(f"PORT must be between 1 and 65535: {port}")
+    return ApiConfig(host=host, port=port)
 
 
 def _validate(settings: Settings) -> None:
