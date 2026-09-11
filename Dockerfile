@@ -13,7 +13,13 @@ COPY config.yaml ./
 COPY artifacts ./artifacts
 COPY data ./data
 
+# Hosted platforms assign the port at runtime; PORT overrides config.yaml.
+ENV PORT=8000
 EXPOSE 8000
+
+RUN useradd --create-home --uid 1001 factorypulse \
+    && chown -R factorypulse:factorypulse /app
+USER factorypulse
 
 CMD ["uv", "run", "--no-sync", "factorypulse", "serve"]
 
