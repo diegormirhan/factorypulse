@@ -1,0 +1,18 @@
+# Render blueprint — https://render.com/docs/blueprint-spec
+#
+# Deploy: push this file, then New > Blueprint in the Render dashboard and point
+# it at the repository. Render builds the Dockerfile, injects PORT, and polls
+# /api/health until the model bundle is loaded.
+services:
+  - type: web
+    name: factorypulse
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      # The container disk is ephemeral and the log has no rotation, so the
+      # hosted demo runs without it. Remove this to write artifacts/predictions.jsonl.
+      - key: FACTORYPULSE_PREDICTIONS_LOG
+        value: ""
